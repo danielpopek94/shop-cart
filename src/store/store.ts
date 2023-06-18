@@ -2,14 +2,29 @@ import { createStore } from 'vuex';
 
 import type Phone from '@/types/Phone';
 import type CartPhone from '@/types/CartPhone';
+import { watch } from 'vue';
 
 interface State {
   cartProducts: CartPhone[];
 }
 
+const loadCartFromLocalStorage = (): CartPhone[] => {
+  const cartProductsJson = localStorage.getItem('cartProducts');
+
+  if (cartProductsJson) {
+    return JSON.parse(cartProductsJson) || [];
+  } else {
+    return [];
+  }
+};
+
+const saveCartToLocalStorage  = (cart: CartPhone[]) => {
+  localStorage.setItem('cartProducts', JSON.stringify(cart));
+}
+
 const store = createStore<State>({
   state: {
-    cartProducts: [],
+    cartProducts: loadCartFromLocalStorage(),
   },
   getters: {
     cartSum(state: State): number {
@@ -56,5 +71,13 @@ const store = createStore<State>({
     }
   },
 });
+
+watch(
+  () => store.state.cartProducts,
+  (newValue) => saveCartToLocalStorage(newValue),
+  {
+    deep: true,
+  }
+);
 
 export default store;
